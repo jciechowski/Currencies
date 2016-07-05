@@ -6,7 +6,6 @@ namespace Currency.Controllers
 {
     public class CurrencyController : ApiController
     {
-        // GET api/<controller>
         public Rate Get()
         {
             var result = new Rate();
@@ -22,25 +21,9 @@ namespace Currency.Controllers
             return result;
         }
 
-        // GET api/<controller>/5
-        public string Get(int id)
+        public double Get(string currency)
         {
-            return "value";
-        }
-
-        // POST api/<controller>
-        public void Post([FromBody]string value)
-        {
-        }
-
-        // PUT api/<controller>/5
-        public void Put(int id, [FromBody]string value)
-        {
-        }
-
-        // DELETE api/<controller>/5
-        public void Delete(int id)
-        {
+            return 1.0;
         }
     }
 }
