@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Net.Http;
 using System.Web.Http;
 using Currency.Models;
 
@@ -6,6 +7,7 @@ namespace Currency.Controllers
 {
     public class CurrencyController : ApiController
     {
+        [HttpGet]
         public Rate Get()
         {
             var result = new Rate();
@@ -21,9 +23,43 @@ namespace Currency.Controllers
             return result;
         }
 
+        [HttpGet]
         public double Get(string currency)
         {
-            return 1.0;
+            var result = new Rate();
+            using (var httpClient = new HttpClient())
+            {
+                var task = httpClient.GetStringAsync("http://api.fixer.io/latest").ContinueWith(taskResponse =>
+                {
+                    var response = taskResponse.Result;
+                    result = Newtonsoft.Json.JsonConvert.DeserializeObject<Rate>(response);
+                });
+                task.Wait();
+            }
+            if (currency == "chf")
+                return result.Currencies.Chf;
+            if (currency == "gbp")
+                return result.Currencies.Gbp;
+            if (currency == "usd")
+                return result.Currencies.Usd;
+            return 0;
+        }
+
+        [HttpGet]
+        [Route("api/currency/date/{date}")]
+        public Rate Get(DateTime date)
+        {
+            var result = new Rate();
+            using (var httpClient = new HttpClient())
+            {
+                var task = httpClient.GetStringAsync("http://api.fixer.io/"+date.ToString("yyyy-MM-dd")).ContinueWith(taskResponse =>
+                {
+                    var response = taskResponse.Result;
+                    result = Newtonsoft.Json.JsonConvert.DeserializeObject<Rate>(response);
+                });
+                task.Wait();
+            }
+            return result;
         }
     }
 }
