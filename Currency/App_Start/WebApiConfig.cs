@@ -16,12 +16,6 @@ namespace Currency
                 routeTemplate: "api/{controller}/",
                 defaults: new { id = RouteParameter.Optional }
             );
-
-            config.Routes.MapHttpRoute(
-                name: "GetByCurrency",
-                routeTemplate: "api/{controller}/{currency}",
-                defaults: new { id = RouteParameter.Optional }
-            );
         }
     }
 }

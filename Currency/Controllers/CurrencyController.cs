@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Web.Http;
 using Currency.Models;
@@ -24,40 +25,40 @@ namespace Currency.Controllers
         }
 
         [HttpGet]
-        public double Get(string currency)
+        [Route("api/currency/{currency}")]
+        public Rate Get(string currency)
         {
             var result = new Rate();
             using (var httpClient = new HttpClient())
             {
-                var task = httpClient.GetStringAsync("http://api.fixer.io/latest").ContinueWith(taskResponse =>
+                var task = httpClient.GetStringAsync("http://api.fixer.io/latest?symbols="+currency).ContinueWith(taskResponse =>
                 {
                     var response = taskResponse.Result;
                     result = Newtonsoft.Json.JsonConvert.DeserializeObject<Rate>(response);
                 });
                 task.Wait();
             }
-            if (currency == "chf")
-                return result.Currencies.Chf;
-            if (currency == "gbp")
-                return result.Currencies.Gbp;
-            if (currency == "usd")
-                return result.Currencies.Usd;
-            return 0;
+            return result;
         }
 
         [HttpGet]
-        [Route("api/currency/date/{date}")]
-        public Rate Get(DateTime date)
+        [Route("api/currency/date/{date}/{days}")]
+        public IEnumerable<Rate> Get(DateTime date, int days)
         {
-            var result = new Rate();
+            var startDate = date.AddDays(-days);
+            var result = new List<Rate>();
             using (var httpClient = new HttpClient())
             {
-                var task = httpClient.GetStringAsync("http://api.fixer.io/"+date.ToString("yyyy-MM-dd")).ContinueWith(taskResponse =>
+                while (startDate < date)
                 {
-                    var response = taskResponse.Result;
-                    result = Newtonsoft.Json.JsonConvert.DeserializeObject<Rate>(response);
-                });
-                task.Wait();
+                    var task = httpClient.GetStringAsync("http://api.fixer.io/" + startDate.ToString("yyyy-MM-dd")).ContinueWith(taskResponse =>
+                    {
+                        var response = taskResponse.Result;
+                        result.Add(Newtonsoft.Json.JsonConvert.DeserializeObject<Rate>(response));
+                    });
+                    task.Wait();
+                    startDate = startDate.AddDays(1);
+                }
             }
             return result;
         }
