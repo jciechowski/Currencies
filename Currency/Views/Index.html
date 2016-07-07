@@ -1,100 +1,99 @@
 ﻿<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
+
 <head>
     <title>Currencies</title>
 </head>
+
 <body>
-
-
-    <div>
-        <h2>Hajsik</h2>
-        <span id="date" />
-        <ul id="rates" />
-    </div>
-
     <div>
         <form>
             Data
             <input type="date" id="rateDates">
+            Days back:
+            <input type="number" id="daysBack" value="5">
         </form>
         <ul id="specificRate" />
     </div>
-
-    <div>
-        <select id="currencyInput">
-            <option value="USD">USD</option>
-            <option value="CHF">CHF</option>
-            <option value="GBP">GBP</option>
-        </select>
-        <span id="specificCurrency" />
-    </div>
-
-<div id="curve_chart" style="width: 900px; height: 500px;"></div>
-
+    <div id="chart_div"></div>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.0.3.min.js"></script>
     <script>
-        var uri = '/api/Currency/';
+    var uri = '/api/Currency/';
 
-        $(document).ready(function () {
-            // Send an AJAX request
-            $.getJSON(uri)
-                .done(function (data) {
-                    // On success, 'data' contains a list of products.
-                    $('#date').append(data.date);
-                    $.each(data.rates,
-                        function (currency, rate) {
-                            console.log(currency + " " + rate);
-                            $('<li>', { text: currency + " " + rate }).appendTo($('#rates'));
-                        });
-                    console.log(data);
-                });
-        });
+    $(document).ready(function() {
+        $('#rateDates').val("2016-07-01");
+        $.getJSON(uri + "date/" + $('#rateDates').val() + "/" + $('#daysBack').val())
+            .done(function(data) {
+                drawChart(prepareChartData(data));
+            });
+    });
 
-        $('#rateDates').on('input', function () {
-            $.getJSON(uri + "date/" + this.value)
-            .done(function (data) {
-                $('#specificRate').empty();
-                $.each(data.rates,
-                    function (currency, rate) {
-                        $('<li>', { text: currency + " " + rate }).appendTo($('#specificRate'));
+    $('#rateDates').on('blur', function() {
+        $.getJSON(uri + "date/" + this.value + "/" + $('#daysBack').val())
+            .done(function(data) {
+                drawChart(prepareChartData(data));
+            });
+    });
 
-                    });
+    $('#daysBack').on('blur', function(){
+        $.getJSON(uri + "date/" + $('#rateDates').val() + "/" + this.value)
+            .done(function(data) {
+                drawChart(prepareChartData(data));
             });
         });
 
-        $('#currencyInput').on('input', function () {
-            var currency = this.value;
-            $.getJSON(uri + currency.toLowerCase())
-                .done(function (data) {
-                    $('#specificCurrency').text('');
-                    console.log(data);
-                    $('#specificCurrency').append(currency + ": " + data);
-                });
-        });
+    function prepareChartData(data) {
+        var chartData = [];
+         $.each(data, function(i, value){
+             var date = value.date.replace(/-/g, ",");
+             var temp = [];
+             temp.push(new Date(date));
+             $.each(value.rates, function(currency, rate){
+                temp.push(rate);
+             });
+             chartData.push(temp);
+         });
 
-        google.charts.load('current', { 'packages': ['corechart'] });
-        google.charts.setOnLoadCallback(drawChart);
+        return chartData;
+    }
 
-        function drawChart() {
-            var data = google.visualization.arrayToDataTable([
-              ['Year', 'Sales', 'Expenses'],
-              ['2004', 1000, 400],
-              ['2005', 1170, 460],
-              ['2006', 660, 1120],
-              ['2007', 1030, 540]
-            ]);
+    google.charts.load('current', {
+        'packages': ['corechart']
+    });
+    google.charts.setOnLoadCallback(drawChart);
 
-            var options = {
-                title: 'Company Performance',
-                curveType: 'function',
-                legend: { position: 'bottom' }
-            };
+    function drawChart(chartData) {
 
-            var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
+        var data = new google.visualization.DataTable();
+        data.addColumn('date', 'X');
+        data.addColumn('number', 'CHF');
+        data.addColumn('number', 'EUR');
+        data.addColumn('number', 'GBP');
+        data.addColumn('number', 'USD');
 
-            chart.draw(data, options);
-        }
+        data.addRows(chartData);
+
+
+        var options = {
+            title: 'Currency rates',
+            width: 900,
+            height: 500,
+            hAxis: {
+                format: 'M/d/yy',
+                title: 'Date'
+            },
+            vAxis: {
+                title: 'Price',
+                viewWindowMode: 'pretty'
+            },
+        };
+
+        var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+
+        chart.draw(data, options);
+    }
     </script>
 </body>
+
 </html>

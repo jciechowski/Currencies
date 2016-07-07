@@ -14,7 +14,7 @@ namespace Currency.Controllers
             var result = new Rate();
             using (var httpClient = new HttpClient())
             {
-                var task = httpClient.GetStringAsync("http://api.fixer.io/latest").ContinueWith(taskResponse =>
+                var task = httpClient.GetStringAsync("http://api.fixer.io/latest?base=PLN").ContinueWith(taskResponse =>
                 {
                     var response = taskResponse.Result;
                     result = Newtonsoft.Json.JsonConvert.DeserializeObject<Rate>(response);
@@ -31,7 +31,7 @@ namespace Currency.Controllers
             var result = new Rate();
             using (var httpClient = new HttpClient())
             {
-                var task = httpClient.GetStringAsync("http://api.fixer.io/latest?symbols="+currency).ContinueWith(taskResponse =>
+                var task = httpClient.GetStringAsync("http://api.fixer.io/latest?base=PLN?symbols=" + currency).ContinueWith(taskResponse =>
                 {
                     var response = taskResponse.Result;
                     result = Newtonsoft.Json.JsonConvert.DeserializeObject<Rate>(response);
@@ -49,9 +49,9 @@ namespace Currency.Controllers
             var result = new List<Rate>();
             using (var httpClient = new HttpClient())
             {
-                while (startDate < date)
+                while (startDate <= date)
                 {
-                    var task = httpClient.GetStringAsync("http://api.fixer.io/" + startDate.ToString("yyyy-MM-dd")).ContinueWith(taskResponse =>
+                    var task = httpClient.GetStringAsync("http://api.fixer.io/" + startDate.ToString("yyyy-MM-dd")+ "?base=PLN").ContinueWith(taskResponse =>
                     {
                         var response = taskResponse.Result;
                         result.Add(Newtonsoft.Json.JsonConvert.DeserializeObject<Rate>(response));
