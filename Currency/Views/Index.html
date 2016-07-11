@@ -11,89 +11,14 @@
             Data
             <input type="date" id="rateDates">
             Days back:
-            <input type="number" id="daysBack" value="5">
+            <input type="number" id="daysBack" value="15">
         </form>
         <ul id="specificRate" />
     </div>
     <div id="chart_div"></div>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.0.3.min.js"></script>
-    <script>
-    var uri = '/api/Currency/';
-
-    $(document).ready(function() {
-        $('#rateDates').val("2016-07-01");
-        $.getJSON(uri + "date/" + $('#rateDates').val() + "/" + $('#daysBack').val())
-            .done(function(data) {
-                drawChart(prepareChartData(data));
-            });
-    });
-
-    $('#rateDates').on('blur', function() {
-        $.getJSON(uri + "date/" + this.value + "/" + $('#daysBack').val())
-            .done(function(data) {
-                drawChart(prepareChartData(data));
-            });
-    });
-
-    $('#daysBack').on('blur', function(){
-        $.getJSON(uri + "date/" + $('#rateDates').val() + "/" + this.value)
-            .done(function(data) {
-                drawChart(prepareChartData(data));
-            });
-        });
-
-    function prepareChartData(data) {
-        var chartData = [];
-         $.each(data, function(i, value){
-             var date = value.date.replace(/-/g, ",");
-             var temp = [];
-             temp.push(new Date(date));
-             $.each(value.rates, function(currency, rate){
-                temp.push(rate);
-             });
-             chartData.push(temp);
-         });
-
-        return chartData;
-    }
-
-    google.charts.load('current', {
-        'packages': ['corechart']
-    });
-    google.charts.setOnLoadCallback(drawChart);
-
-    function drawChart(chartData) {
-
-        var data = new google.visualization.DataTable();
-        data.addColumn('date', 'X');
-        data.addColumn('number', 'CHF');
-        data.addColumn('number', 'EUR');
-        data.addColumn('number', 'GBP');
-        data.addColumn('number', 'USD');
-
-        data.addRows(chartData);
-
-
-        var options = {
-            title: 'Currency rates',
-            width: 900,
-            height: 500,
-            hAxis: {
-                format: 'M/d/yy',
-                title: 'Date'
-            },
-            vAxis: {
-                title: 'Price',
-                viewWindowMode: 'pretty'
-            },
-        };
-
-        var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
-
-        chart.draw(data, options);
-    }
-    </script>
+    <script src="../Scripts/drawChart.js"></script>
 </body>
 
 </html>
