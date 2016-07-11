@@ -1,7 +1,7 @@
 var uri = '/api/Currency/';
 
 $(document).ready(function() {
-    var today = new Date().toJSON().slice(0,10);
+    var today = new Date().toJSON().slice(0, 10);
     $('#rateDates').val(today);
     $.getJSON(uri + "date/" + $('#rateDates').val() + "/" + $('#daysBack').val())
         .done(function(data) {
@@ -23,6 +23,18 @@ $('#daysBack').on('blur', function() {
         });
 });
 
+$('#saveChart').submit(function(event) {
+    var chartSrc = $('#chart_div img').prop('src');
+    var savePath = "c:\\chart.png"
+    event.preventDefault();
+    $.ajax({
+        type: "POST", 
+        url: uri,
+        data: {"": [chartSrc, savePath]},
+        dataType: "json"
+    });
+});
+
 function prepareChartData(data) {
     var chartData = [];
     $.each(data, function(i, value) {
@@ -42,6 +54,8 @@ google.charts.load('current', {
     'packages': ['corechart']
 });
 
+
+
 function drawChart(chartData) {
 
     var data = new google.visualization.DataTable();
@@ -51,7 +65,6 @@ function drawChart(chartData) {
     data.addColumn('number', 'GBP');
     data.addColumn('number', 'USD');
 
-    var chart
     data.addRows(chartData);
 
     var options = {
@@ -68,6 +81,11 @@ function drawChart(chartData) {
         },
     };
 
+
     var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
-        chart.draw(data, options);
+    // Wait for the chart to finish drawing before calling the getImageURI() method.
+    google.visualization.events.addListener(chart, 'ready', function() {
+        chart_div.innerHTML = '<img src="' + chart.getImageURI() + '">';
+    });
+    chart.draw(data, options);
 }

@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using Currency.Models;
@@ -61,6 +64,14 @@ namespace Currency.Controllers
                 }
             }
             return result;
+        }
+
+        [HttpPost]
+        public void Save([FromBody]IEnumerable<string> postParams)
+        {
+            var imageSrc = postParams.First().Split(',')[1];
+            var imageSavePath = postParams.Last();
+            File.WriteAllBytes(imageSavePath, Convert.FromBase64String(imageSrc));
         }
     }
 }
