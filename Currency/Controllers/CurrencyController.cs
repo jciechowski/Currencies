@@ -69,6 +69,8 @@ namespace Currency.Controllers
         [HttpPost]
         public void Save([FromBody]IEnumerable<string> postParams)
         {
+            if (!postParams.Any())
+                return;
             var imageSrc = postParams.First().Split(',')[1];
             var imageSavePath = postParams.Last();
             File.WriteAllBytes(imageSavePath, Convert.FromBase64String(imageSrc));
